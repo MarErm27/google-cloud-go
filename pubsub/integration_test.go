@@ -1133,8 +1133,8 @@ func TestIntegration_OrderedKeys_Basic(t *testing.T) {
 		})
 		go func() {
 			<-r.ready
-			if r.err != nil {
-				t.Error(r.err)
+			if r.Err != nil {
+				t.Error(r.Err)
 			}
 		}()
 	}
@@ -1306,7 +1306,7 @@ func TestIntegration_OrderedKeys_ResumePublish(t *testing.T) {
 		OrderingKey: orderingKey,
 	})
 	<-r.ready
-	if r.err == nil {
+	if r.Err == nil {
 		t.Fatalf("expected bundle byte limit error, got nil")
 	}
 	// Publish a normal sized message now, which should fail
@@ -1317,8 +1317,8 @@ func TestIntegration_OrderedKeys_ResumePublish(t *testing.T) {
 		OrderingKey: orderingKey,
 	})
 	<-r.ready
-	if r.err == nil || !strings.Contains(r.err.Error(), "pubsub: Publishing for ordering key") {
-		t.Fatalf("expected ordering keys publish error, got %v", r.err)
+	if r.Err == nil || !strings.Contains(r.Err.Error(), "pubsub: Publishing for ordering key") {
+		t.Fatalf("expected ordering keys publish error, got %v", r.Err)
 	}
 
 	// Lastly, call ResumePublish and make sure subsequent publishes succeed.
@@ -1329,8 +1329,8 @@ func TestIntegration_OrderedKeys_ResumePublish(t *testing.T) {
 		OrderingKey: orderingKey,
 	})
 	<-r.ready
-	if r.err != nil {
-		t.Fatalf("got error while publishing message: %v", r.err)
+	if r.Err != nil {
+		t.Fatalf("got error while publishing message: %v", r.Err)
 	}
 }
 

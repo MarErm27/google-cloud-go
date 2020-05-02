@@ -16,6 +16,7 @@ package pubsub_test
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"sync"
 	"testing"
@@ -23,6 +24,9 @@ import (
 	"cloud.google.com/go/internal/testutil"
 	"cloud.google.com/go/pubsub"
 	"cloud.google.com/go/pubsub/pstest"
+
+	// pubSubWithQueueError "github.com/MarErm27/alicebob/pubsub"
+	pb "cloud.google.com/go/pubsub"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 )
@@ -91,5 +95,42 @@ func TestPSTest(t *testing.T) {
 	})
 	if err != nil {
 		panic(err)
+	}
+}
+
+func TestQueueError(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	srv := pstest.NewServer()
+	defer srv.Close()
+
+	conn, err := grpc.Dial(srv.Addr, grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	opts := withGRPCHeadersAssertionAlt(t, option.WithGRPCConn(conn))
+	client, err := pubsub.NewClient(ctx, "some-project", opts...)
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	topic, err := client.CreateTopic(ctx, "test-topic")
+	if err != nil {
+		panic(err)
+	}
+	defer topic.Stop()
+
+	tesQueueError := errors.New("oops")
+	pb.AddQueueError(tesQueueError)
+
+	r := topic.Publish(ctx, &pubsub.Message{
+		Data: []byte("hello world"),
+	})
+
+	if r.Err != tesQueueError {
+		panic(r.Err)
 	}
 }
