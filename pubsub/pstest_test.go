@@ -123,14 +123,14 @@ func TestQueueError(t *testing.T) {
 	}
 	defer topic.Stop()
 
-	tesQueueError := errors.New("oops")
+	testQueueError := errors.New("oops")
 	pb.AddQueueError(tesQueueError)
 
 	r := topic.Publish(ctx, &pubsub.Message{
 		Data: []byte("hello world"),
 	})
 
-	if r.Err != tesQueueError {
+	if r.Err != testQueueError {
 		panic(r.Err)
 	}
 }

@@ -404,7 +404,6 @@ func (t *Topic) Publish(ctx context.Context, msg *Message) *PublishResult {
 		err := QueueError
 		QueueError = nil
 		return &PublishResult{Err: err}
-
 	}
 
 	if !t.EnableMessageOrdering && msg.OrderingKey != "" {
