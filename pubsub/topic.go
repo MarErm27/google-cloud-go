@@ -51,9 +51,10 @@ const (
 // ErrOversizedMessage indicates that a message's size exceeds MaxPublishRequestBytes.
 var ErrOversizedMessage = bundler.ErrOversizedItem
 
-// QueueError is a default value for err field in Publish function responce
+// QueueError indicates custom error for testing purposes
 var QueueError error
 
+// AddQueueError allows to test queue errors in Pub/Sub pstest
 func AddQueueError(e error) {
 	QueueError = e
 }
