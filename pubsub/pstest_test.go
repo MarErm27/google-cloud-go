@@ -24,9 +24,6 @@ import (
 	"cloud.google.com/go/internal/testutil"
 	"cloud.google.com/go/pubsub"
 	"cloud.google.com/go/pubsub/pstest"
-
-	// pubSubWithQueueError "github.com/MarErm27/alicebob/pubsub"
-	pb "cloud.google.com/go/pubsub"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 )
@@ -96,6 +93,7 @@ func TestPSTest(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func TestQueueError(t *testing.T) {
@@ -124,13 +122,13 @@ func TestQueueError(t *testing.T) {
 	defer topic.Stop()
 
 	testQueueError := errors.New("oops")
-	pb.AddQueueError(tesQueueError)
+	pubsub.AddQueueError(testQueueError)
 
 	r := topic.Publish(ctx, &pubsub.Message{
 		Data: []byte("hello world"),
 	})
-
-	if r.Err != testQueueError {
-		panic(r.Err)
+	_, err = r.Get(ctx)
+	if err != testQueueError {
+		t.Errorf("got %v, want "+testQueueError.Error(), err)
 	}
 }
