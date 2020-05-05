@@ -16,6 +16,7 @@ package pubsub_test
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"sync"
 	"testing"
@@ -91,5 +92,43 @@ func TestPSTest(t *testing.T) {
 	})
 	if err != nil {
 		panic(err)
+	}
+
+}
+
+func TestQueueError(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	srv := pstest.NewServer()
+	defer srv.Close()
+
+	conn, err := grpc.Dial(srv.Addr, grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	opts := withGRPCHeadersAssertionAlt(t, option.WithGRPCConn(conn))
+	client, err := pubsub.NewClient(ctx, "some-project", opts...)
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	topic, err := client.CreateTopic(ctx, "test-topic")
+	if err != nil {
+		panic(err)
+	}
+	defer topic.Stop()
+
+	testQueueError := errors.New("oops")
+	pubsub.AddQueueError(testQueueError)
+
+	r := topic.Publish(ctx, &pubsub.Message{
+		Data: []byte("hello world"),
+	})
+	_, err = r.Get(ctx)
+	if err != testQueueError {
+		t.Errorf("got %v, want "+testQueueError.Error(), err)
 	}
 }
